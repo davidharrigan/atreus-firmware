@@ -3,6 +3,7 @@
 #include <avr/wdt.h>
 #include <string.h>
 #include <util/delay.h>
+#include <stdio.h>
 #include "usb_keyboard.h"
 
 #define DEBOUNCE_PASSES 10
@@ -172,11 +173,44 @@ void calculate_presses() {
   };
 };
 
+void reverse_array(int arr[], int start, int end) {
+    int temp;
+    while(start < end) {
+      temp = arr[start];
+      arr[start] = arr[end];
+      arr[end] = temp;
+      start++;
+      end--;
+    }
+}
+
+void print_array(int arr[], int start, int end) {
+    while(start < end) {
+      printf("%d ", arr[start]);
+      start ++;
+    }
+    printf("\n");
+}
+
+void reverse_keys() {
+  int num_layers = 3;
+  int i;
+  for (i = 0; i < num_layers; i++) {
+    int j;
+    for (j = 0; j < ROW_COUNT; j++) {
+      int start = j * COL_COUNT;
+      int end = j * COL_COUNT + COL_COUNT - 1;
+      reverse_array(layers[i], start, end);
+    }
+  }
+}
+
 
 // Top level stuff
 
 void init() {
   CPU_PRESCALE(0);
+  reverse_keys();
   DDRB = DDRC = DDRE = DDRF = DDRD = 0; // set everything to input
   PORTB = PORTC = PORTE = PORTF = PORTD = 255; // enable pullups
   // set the row pins as outputs
